@@ -12,9 +12,10 @@ var getMap = {};
 var NOT_FOUND = "Not Found\n";
 
 function notFound(req, res) {
+    console.log('in notFound');
     res.writeHead(404, {
         "Content-Type": "text/plain",
-        "Content-Type": NOT_FOUND.length
+        "Content-Length": NOT_FOUND.length
     });
 }
 
@@ -24,14 +25,17 @@ fu.get = function (path, handler) {
 
 var server = createServer(function(req, res) {
     if (req.method === "GET" || req.method === "HEAD") {
+        console.log('request for ' + url.parse(req.url).pathname); 
         var handler = getMap[url.parse(req.url).pathname] || notFound; 
 
         res.simpleText = function(code, body) {
             res.writeHead(code, {
                 "Content-Type": "text/plain",
-                "Content-Length": body.lengt
+                "Content-Length": body.length
 
             })
+            //res.write(body);
+            res.end(body);
         };
 
         res.simpleJSON = function(code, obj) {
@@ -52,5 +56,6 @@ fu.listen = function(port, host) {
     sys.puts("Server at http://" + (host || "127.0.0.1") + ":" + port.toString() + "/");
 };
 
-fu.close = function() {server.close(); };
-
+fu.close = function() {
+    server.close(); 
+};
