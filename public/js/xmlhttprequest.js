@@ -71,6 +71,35 @@ APP.ajax = (function() {
             options.beforeSend();
         }
 
+        request.onreadystatechange = function() {
+            var type;
+
+            switch (request.readyState) {
+                case 0:
+                    console.log("request.open has not yet been called");
+                    break;
+                case 1:
+                    console.log("request.open has been called");
+                    break;
+                case 2:
+                    console.log("response headers have been received");
+                    break;
+                case 3:
+                    console.log("response body is being received");
+                    break;
+                case 4:
+                    console.log("response is complete");
+                    type = request.getResponseHeader("Content-Type");
+                    console.log(type);
+                    break;
+                    //TODO: call success function if available
+                    //  call complete function if available
+                default:
+                   console.log("unknown value for response.readyState");
+                   break;
+            }
+        };
+
         switch (options.method) {
             case 'GET':
                 request.send(null);
