@@ -61,10 +61,11 @@ function Channel() {
     };
 
     this.query = function(since, callback) {
-        var matching = [];
+        var matching = [],
+            message;
 
         for (var i = 0, l = messages.length; i < l; i += 1) {
-            var message = messages[i];
+            message = messages[i];
             if (message.timestamp > since)
                 matching.push(message);
         }
@@ -116,6 +117,7 @@ cs.who = function (req, res) {
     var nicks = [],
         sessions = cs.sessions,
         session;
+
     for (var id in sessions) {
         if (!sessions.hasOwnProperty(id)) continue;
 
@@ -131,14 +133,15 @@ cs.who = function (req, res) {
 
 cs.join = function(req, res) {
     var nick = qs.parse(url.parse(req.url).query).nick,
-        channel = cs.channel;
+        channel = cs.channel,
+        session;
 
     if (typeof nick === 'undefined' || nick.length === 0) {
         res.status(400).send({error: 'Bad nickname.'});
         return;
     }
 
-    var session = cs.createSession(nick);
+    session = cs.createSession(nick);
     if (!session) {
         res.status(400).send({error: "Nick in use"});
         return;
@@ -151,4 +154,50 @@ cs.join = function(req, res) {
         rss: mem.rss,
         starttime: startTime
     });
+};
+
+cs.recv = function(req, res) {
+    var id,
+        session,
+        sessions = cs.sessions,
+        since,
+        channel = cs.channel;
+
+    if (!qs.parse(url.parse(req.url).query).since) {
+        res.status(400).send({error: "Must supply since paramete"});
+        return false;
+    }
+
+    if (!qs.parse(url.parse(req.url).query).id) {
+        res.status(400).send({error: "Must supply id parameter"});
+        return false;
+    }
+
+    since = parseInt(qs.parse(url.parse(req.url).query).since, 10);
+    id = qs.parse(url.parse(req.url).query).id;
+
+    if (id && sessions[id]) {
+        session = sessions[id];
+        session.poke();
+    }
+
+    channel.query(since, function(messages) {
+        if (session) session.poke();
+        res.status(200).json({
+            messages: messages,
+            rss: mem.rss
+        });
+    });
+};
+
+cs.send_post = function(req, res) {
+    var data = qs.parse(url.parse(req.url).query),
+        contentType = req.headers;
+
+    sys.puts(contentType);
+
+    for (var i in data) {
+        sys.puts(i);
+    }
+    res.status(200).send(data);
 };
