@@ -156,6 +156,26 @@ cs.join = function(req, res) {
     });
 };
 
+/**
+ * Called when a member of the chat group leaves the chat
+ * @function part
+ * @param {Request} req - Express Request object
+ * @param {Response} res - Express Response object 
+ *
+ */
+cs.part = function(req, res) {
+    var id = qs.parse(url.parse(req.url).query).id,
+        session,
+        sessions = cs.sessions;
+    if (id && sessions[id]) {
+        session = sessions[id];
+        session.destroy();
+    }
+    res.status(200).json({
+        rss: mem.rss
+    });
+};
+
 cs.recv = function(req, res) {
     var id,
         session,
