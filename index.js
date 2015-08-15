@@ -18,6 +18,15 @@ app.get('/who', cs.who);
 
 app.get('/join', cs.join);
 
+app.get('/send', function(req, res) {
+    res.status(200).send('TNB');
+});
+
+app.post('/send', function(req, res) {
+    //res.sendFile('css/main.css', {root: __dirname + "/public/"});
+    res.status(200).send({'oooga': 'booga', 'watermelon': 'fried chicken'});
+});
+
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });

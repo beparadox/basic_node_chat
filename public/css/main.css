@@ -1,0 +1,75 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    padding-top: 0px;
+    padding-bottom: 100px;
+}
+
+.container-fluid {
+    width: 100%;
+}
+
+.row {
+    width: 100%;
+    padding: 10px;
+
+}
+
+/*------------------------------- modules ----------------------------*/
+
+/*------------------ header ------------------*/
+
+/*------------------ main ------------------*/
+
+/*------------------ footer------------------*/
+#footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #000000;
+    border-width: 0;
+
+}
+
+
+#footer_msgbar {
+    width: 100%;
+    height: 30px;
+    font-size: 21px;
+    background-color: #680000;
+    color: white;
+}
+
+#enter_message_wrapper {
+    width: 100%;
+    height: 100px;
+}
+
+.navbar {
+    background-color: black;
+    color: #FFFFFF;
+}
+
+/*------------------- INPUT -----------------------*/
+input[type="text"] {
+    line-height: 2;
+}
+
+input[id="enter_message"] {
+    background-color: inherit;
+    color: #FFFFFF;
+    width: 100%;
+    outline-width: 0;
+    border: none;
+    font-size: 2em;
+}
+
+/*----------------- footer ---------------------------*/
+button {
+    width: 100px;
+    line-height: 2;
+}

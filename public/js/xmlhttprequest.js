@@ -17,8 +17,9 @@
  *
  *
  */
-var APP = {};
-APP.ajax = (function() {
+var BAMNodeChat = {};
+BAMNodeChat.utils = {};
+BAMNodeChat.utils.ajax = (function() {
     var ajax,
     callbacks = [],
     options = {
@@ -34,6 +35,7 @@ APP.ajax = (function() {
     };
 
     function verifyOptions(obj) {
+        console.log(obj);
 
         if (!obj.url || typeof obj.url !== 'string') {
             throw new TypeError();
@@ -41,16 +43,37 @@ APP.ajax = (function() {
             options.url = obj.url;
         }
 
-        if (obj.method && typeof object.method === 'string') {
+        if (obj.method && typeof obj.method === 'string') {
             options.method = obj.method.toUpperCase();
 
             if (options.method === "POST" && !obj.data) {
                 throw new TypeError('missing data for POST request');
+            } else {
+                if (typeof obj.data === "object") {
+                    options.data = JSON.stringify(obj.data);
+                } else {
+                    options.data = obj.data;
+
+                }
             }
         }
-    }
 
-    function setHeaders() {
+        if (obj.headers && typeof obj.headers === "object") {
+            options.headersFlag = true;
+            options.headers = obj.headers;
+        }
+
+        if (obj.beforeSend && typeof obj.beforeSend === 'function') {
+            options.beforeSend = obj.beforeSend;
+        }
+
+        if (obj.success && typeof obj.success === 'function') {
+            options.success = obj.success;
+        }
+
+        if (obj.complete && typeof obj.complete === 'function') {
+            options.complete = obj.complete;
+        }
 
     }
 
@@ -59,8 +82,10 @@ APP.ajax = (function() {
         request = new XMLHttpRequest();
 
         verifyOptions(obj);
+        console.log(options);
 
         request.open(options.method, options.url);
+
         if (options.headersFlag) {
             for (var i in options.headers) {
                 request.setRequestHeader(i, options.headers[i]);
@@ -91,6 +116,7 @@ APP.ajax = (function() {
                     console.log("response is complete");
                     type = request.getResponseHeader("Content-Type");
                     console.log(type);
+                    options.success(request.responseText);
                     break;
                     //TODO: call success function if available
                     //  call complete function if available
