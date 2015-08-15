@@ -29,10 +29,36 @@ BAMNodeChat.utils.ajax = (function() {
         beforeSend: null,
         success: null,
         url: null,
+
+        
         headersFlag: false,
-        headers: null,
+        headers: {},
         data: null
     };
+ 
+    /**
+     * a function to encode form data to be sent via XMLXttpRequest
+     * From JavaScript: The Definitive Guide by David Flanigan, 6th Ed
+     * Chapter 18
+     * 
+     *
+     */
+    function encodeFormData(data) {
+        if (!data) return "";
+        var pairs = [],
+            value;
+        for (var name in data) {
+            if (!data.hasOwnProperty(name)) continue;
+            if (typeof data[name] === 'function') continue;
+
+            value = data[name].toString();
+            name = encodeURIComponent(name).replace('%20', '+');
+            value = encodeURIComponent(value).replace('%20', '+');
+            pairs.push(name + "=" + value);
+        }
+
+        return pairs.join('&'); // return joined paris separated with &
+    }
 
     function verifyOptions(obj) {
         console.log(obj);
@@ -45,16 +71,26 @@ BAMNodeChat.utils.ajax = (function() {
 
         if (obj.method && typeof obj.method === 'string') {
             options.method = obj.method.toUpperCase();
+        } else {
+            options.method = "GET";
+        }
 
-            if (options.method === "POST" && !obj.data) {
-                throw new TypeError('missing data for POST request');
-            } else {
-                if (typeof obj.data === "object") {
+        if (options.method === "POST" && !obj.data) {
+            throw new TypeError('missing data for POST request');
+        } else {
+            if (typeof obj.data === "object") {
+                if (obj.dataType.toUpperCase() === "JSON") {
                     options.data = JSON.stringify(obj.data);
-                } else {
-                    options.data = obj.data;
-
+                    headers['Content-Type'] = 'application/json';
+                } else { 
+                    // encode data as if it's form encoded
+                    options.data = encodeFormData(obj.data);
+                    headers['Content-Type'] = 'application/x-www-form-urlencoded';
                 }
+            } else {
+                // the data must be transferred as a string 
+                options.data = obj.data.toString();
+                headers['Content-Type'] = 'text/plain';
             }
         }
 
