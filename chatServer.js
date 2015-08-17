@@ -14,10 +14,12 @@ var mem = process.memoryUsage();
 
 setInterval(function() {
     mem = process.memoryUsage();
+    console.log(mem);
 }, 10*1000);
 
 var sys = require('sys'),
     url = require('url'),
+    util = require('util'),
     qs = require('querystring');
 
 var MESSAGE_BACKLOG = 200,
@@ -82,15 +84,17 @@ cs.channel = new Channel();
 cs.sessions = {};
 
 cs.createSession = function (nick) {
-    var session;
+    var session,
+        sessions = cs.sessions;
+
     if (nick.length > 50) return false;
     if (/[^\w_\-^!]/.exec(nick)) {
         console.log(nick + ' does not match the RE');
         return false;
     }
 
-    for (var i in cs.sessions) {
-        session = cs.sessions[i];
+    for (var i in sessions) {
+        session = sessions[i];
         if (session && session.nick === nick) return false;
     }
 
@@ -109,7 +113,7 @@ cs.createSession = function (nick) {
         }
     };
 
-    cs.sessions[session.id] = session;
+    sessions[session.id] = session;
     return session;
 };
 
@@ -136,24 +140,32 @@ cs.join = function(req, res) {
         channel = cs.channel,
         session;
 
+    console.log(util.inspect(nick));
+    console.log(util.inspect(req.headers['content-type']));
+
     if (typeof nick === 'undefined' || nick.length === 0) {
-        res.status(400).send({error: 'Bad nickname.'});
+        res.status(400).send({
+            error: 'Bad nickname'
+        });
         return;
     }
 
     session = cs.createSession(nick);
     if (!session) {
-        res.status(400).send({error: "Nick in use"});
+        res.status(400).send({
+            error: "Nick in use"
+        });
         return;
     }
 
     channel.appendMessage(session.nick, "join");
-    res.status(200).send({
+    res.status(200).json({
         id: session.id,
         nick: session.nick,
         rss: mem.rss,
         starttime: startTime
     });
+
 };
 
 /**
@@ -176,15 +188,20 @@ cs.part = function(req, res) {
     });
 };
 
+/**
+ *@method recv
+ *@param {Request}  req - Express Request object
+ *@param {Response} res - Express Request object
+ */
 cs.recv = function(req, res) {
     var id,
+        since,
         session,
         sessions = cs.sessions,
-        since,
         channel = cs.channel;
 
     if (!qs.parse(url.parse(req.url).query).since) {
-        res.status(400).send({error: "Must supply since paramete"});
+        res.status(400).send({error: "Must supply since parameter"});
         return false;
     }
 
@@ -207,6 +224,27 @@ cs.recv = function(req, res) {
             messages: messages,
             rss: mem.rss
         });
+    });
+};
+
+cs.send = function(req, res) {
+    var id = qs.parse(url.parse(req.url).query).id,
+        text = qs.parse(url.parse(req.url).query).text,
+        sessions = cs.sessions,
+        session = sessions[id],
+        channel = cs.channel;
+
+    if (!session || !text) {
+        sys.puts('Missing session id or text');
+        res.status(400).json({
+            error: 'Missing session id or text'
+        });
+        return;
+    }
+    session.poke();
+    channel.appendMessage(session.nick, "msg", text);
+    res.status(200).json({
+        rss: mem.rss
     });
 };
 

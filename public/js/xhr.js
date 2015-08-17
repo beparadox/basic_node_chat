@@ -19,6 +19,12 @@
  */
 var BAMNodeChat = {};
 BAMNodeChat.utils = {};
+BAMNodeChat.utils.array = {};
+BAMNodeChat.utils.array.isArray = function(arr) {
+    var str = '[object Array]';
+    return Object.prototype.toString.call(arr) === str;
+};
+
 BAMNodeChat.utils.ajax = (function() {
     var ajax,
     callbacks = [];
@@ -36,7 +42,6 @@ BAMNodeChat.utils.ajax = (function() {
         for (var name in data) {
             if (!data.hasOwnProperty(name)) continue;
             if (typeof data[name] === 'function') continue;
-
             value = data[name].toString();
             name = encodeURIComponent(name).replace('%20', '+');
             value = encodeURIComponent(value).replace('%20', '+');
@@ -130,6 +135,7 @@ BAMNodeChat.utils.ajax = (function() {
 
         options = verifyOptions(obj);
 
+        if (options.data) options.url += '?' + options.data;
         request.open(options.method, options.url);
 
         if (options.headersFlag) {
@@ -141,7 +147,8 @@ BAMNodeChat.utils.ajax = (function() {
         
 
         request.onreadystatechange = function() {
-            var type;
+            var type,
+                jsonRE = /application\/json/;
 
             switch (request.readyState) {
                 case 0:
@@ -160,8 +167,8 @@ BAMNodeChat.utils.ajax = (function() {
                     console.log("response is complete");
                     type = request.getResponseHeader("Content-Type").split(';')[0];
                     console.log(type);
-                    if (type === 'application/json') {
-                        options.functions.success(request.responseText);
+                    if (jsonRE.test(request.getResponseHeader("Content-Type"))) {
+                        options.functions.success(JSON.parse(request.responseText));
                     }
                     break;
                     //TODO: call success function if available
