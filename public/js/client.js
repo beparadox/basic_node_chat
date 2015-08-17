@@ -110,7 +110,6 @@ BAMNodeChat.api = (function() {
             this.nickInput = document.getElementById('nickname');
             this.msgInput = document.getElementById('enter_message');
             this.submitButton = document.querySelector('button[name="submit_nickname"]');
-            this.screenDims = document.getElementById('screen_dims');
             this.chatHeader = document.getElementById('chat_header');
             this.footer = document.getElementById('footer');
             this.table = document.getElementsByTagName('table')[0];
@@ -153,19 +152,6 @@ BAMNodeChat.api = (function() {
             } else {
                 throw new TypeError();
             }
-        },
-
-        getScreenDims: function() {
-            var availWidth,
-            availHeight;
-
-            if (screen) {
-                availWidth = screen.availWidth;
-                availHeight = screen.availHeight;
-            }
-            this.screenDims.textContent = "avail: " + availWidth + ", " + availHeight +
-                ' actual: ' + screen.width + ', ' + screen.height;
-
         },
 
         clearMsg: function() {
