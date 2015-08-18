@@ -27,6 +27,11 @@ body {
     color: #C8C8C8;
 }
 
+#chat_messages {
+    overflow-y: scroll;
+    max-height: 600px;
+}
+
 table tr td {
     padding: 5px;
     margin: 5px;

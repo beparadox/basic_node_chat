@@ -33,6 +33,7 @@ BAMNodeChat.api = (function() {
         init: function() {
             model.init();
             view.init();
+            this.request = null;
         },
 
         errorMessages: {
@@ -70,11 +71,6 @@ BAMNodeChat.api = (function() {
                     id: model.id
                 };
                 xhrOptions.data = data;
-                /*view.appendTableRow([{
-                    nick: model.nickname,
-                    text: msg,
-                    timestamp: new Date().getTime()
-                }]);*/
                 ajax(xhrOptions);
             } else {
                 alert(this.errorMessages.msg);
@@ -84,15 +80,20 @@ BAMNodeChat.api = (function() {
 
         recvXHR: function() {
             console.log('in recvXHR');
+            var self = this;
             var xhrOptions = {
                 method: "GET",
                 url: "/recv",
-                success: function(text) {
+                success: function(text, callback) {
                     console.log(text);
                     var time = new Date().getTime();
                     model.updateSince(time);
                     view.appendTableRow(text.messages);
-                    controller.recvXHR();
+                    callback();
+                },
+                complete: function() {
+                    clearTimeout(self.id); 
+                    self.recvXHR();
                 },
                 data: {
                     _: new Date().getTime(),
@@ -101,7 +102,13 @@ BAMNodeChat.api = (function() {
                 }
             };
 
-            ajax(xhrOptions);
+            this.request = ajax(xhrOptions);
+            this.id = setTimeout(function() {
+                if (self.request && self.request.readyState !== 4) {
+                    self.request.abort();
+                    self.recvXHR();
+                }
+            }, 30*1000);
         }
     };
 

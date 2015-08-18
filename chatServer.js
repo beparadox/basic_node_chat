@@ -14,7 +14,6 @@ var mem = process.memoryUsage();
 
 setInterval(function() {
     mem = process.memoryUsage();
-    console.log(mem);
 }, 10*1000);
 
 var sys = require('sys'),
@@ -82,6 +81,21 @@ function Channel() {
 
 cs.channel = new Channel();
 cs.sessions = {};
+
+function Session(nick) {
+    this.nick = nick;
+    this.id = new Date();
+    cs.sessions[this.id] = this;
+}
+
+Session.prototype.poke = function() {
+    this.timestamp = new Date();
+};
+
+Session.prototype.destroy = function() {
+    cs.channel.appendMessage(this.nick, "part");
+    delete cs.sessions[this.id];
+};
 
 cs.createSession = function (nick) {
     var session,
@@ -246,16 +260,4 @@ cs.send = function(req, res) {
     res.status(200).json({
         rss: mem.rss
     });
-};
-
-cs.send_post = function(req, res) {
-    var data = qs.parse(url.parse(req.url).query),
-        contentType = req.headers;
-
-    sys.puts(contentType);
-
-    for (var i in data) {
-        sys.puts(i);
-    }
-    res.status(200).send(data);
 };

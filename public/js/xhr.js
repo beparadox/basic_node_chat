@@ -168,7 +168,7 @@ BAMNodeChat.utils.ajax = (function() {
                     type = request.getResponseHeader("Content-Type").split(';')[0];
                     console.log(type);
                     if (jsonRE.test(request.getResponseHeader("Content-Type"))) {
-                        options.functions.success(JSON.parse(request.responseText));
+                        options.functions.success(JSON.parse(request.responseText), options.functions.complete);
                     }
                     break;
                     //TODO: call success function if available
@@ -197,6 +197,8 @@ BAMNodeChat.utils.ajax = (function() {
                 console.log('Uncaught method:  ' + options.method);
                 break;
         }
+
+        return request;
     };
 
     ajax.encodeFormData = encodeFormData;
