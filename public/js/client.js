@@ -20,19 +20,17 @@ BAMNodeChat.api = (function() {
                     view.removeHeader();
                     model.initValues(text);
                     controller.recvXHR();
-                    timeout = setInterval(function() {
-                        controller.recvXHR();
-                    }, INTERVAL * 1000);
-                    
                 }
             }
         };
 
 
-
+    /**
+     * @object {Object} controller - collection of methods     * and properties useful for running the application
+     *
+     */
     controller = {
         init: function() {
-            console.log('controller init...');
             model.init();
             view.init();
         },
@@ -72,7 +70,11 @@ BAMNodeChat.api = (function() {
                     id: model.id
                 };
                 xhrOptions.data = data;
-                view.appendTableRow(msg);
+                /*view.appendTableRow([{
+                    nick: model.nickname,
+                    text: msg,
+                    timestamp: new Date().getTime()
+                }]);*/
                 ajax(xhrOptions);
             } else {
                 alert(this.errorMessages.msg);
@@ -89,9 +91,8 @@ BAMNodeChat.api = (function() {
                     console.log(text);
                     var time = new Date().getTime();
                     model.updateSince(time);
-                    //view.appendTableRow(text.messages.filter(function(val) {
-                     //   return val.text;
-                    //}));
+                    view.appendTableRow(text.messages);
+                    controller.recvXHR();
                 },
                 data: {
                     _: new Date().getTime(),
@@ -113,32 +114,47 @@ BAMNodeChat.api = (function() {
             this.chatHeader = document.getElementById('chat_header');
             this.footer = document.getElementById('footer');
             this.table = document.getElementsByTagName('table')[0];
-            this.getScreenDims();
             this.initEvents();
         },
 
+        displayTime: function(timestamp) {
+
+        },
+
         appendTableRow: function(msgs) {
-            var tr,
-            td,
-            tn,
-            isArray = BAMNodeChat.utils.array.isArray,
+            console.log(msgs);
+            var isArray = BAMNodeChat.utils.array.isArray,
             createTableRow;
 
             createTableRow = function(msg) {
+                var tr,
+                td, td2, td3,
+                tn, tn2, tn3;
                 tr = document.createElement('tr');
                 td = document.createElement('td');
-                tn = document.createTextNode(msg);
+                td2 = document.createElement('td');
+                td3 = document.createElement('td');
+                tn2 = document.createTextNode(msg.nick);
+                tn = document.createTextNode(new Date(msg.timestamp).toTimeString().split(" ")[0]);
+                if (typeof msg.text === "undefined") {
+                    tn3 = document.createTextNode("joined");
+                    tr.setAttribute("class", "joined");
+                } else {
+                    tn3 = document.createTextNode(msg.text);
+                }
                 td.appendChild(tn);
+                td2.appendChild(tn2);
+                td3.appendChild(tn3);
                 tr.appendChild(td);
+                tr.appendChild(td2);
+                tr.appendChild(td3);
                 this.table.appendChild(tr);
             };
 
             if (isArray(msgs)) {
-                for (var i, l = msgs.length; i < l; i +=1) {
+                for (var i = 0, l = msgs.length; i < l; i +=1) {
                     createTableRow.call(this, msgs[i]);
                 }
-            } else if (typeof msgs === 'string') {
-                    createTableRow.call(this, msgs);
             } else {
                 throw new TypeError('invalid type for appendTableRow');
 
