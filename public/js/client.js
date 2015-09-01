@@ -99,7 +99,6 @@ BAMNodeChat.api = (function() {
                 method: "GET",
                 url: "/recv",
                 success: function(text, callback) {
-                    console.log(text);
                     var time = new Date().getTime();
                     model.updateSince(time);
                     if (text.messages.length > 0)
@@ -146,7 +145,6 @@ BAMNodeChat.api = (function() {
         },
 
         appendTableRow: function(msgs) {
-            console.log(msgs);
             var isArray = BAMNodeChat.utils.array.isArray,
             createTableRow,
             self = this;
@@ -214,7 +212,6 @@ BAMNodeChat.api = (function() {
                 var msg;
                 if (e.keyCode === 13) {
                     msg = self.msgInput.value;
-                    console.log(msg);
                     controller.sendXHR(msg);
                 }
             });
