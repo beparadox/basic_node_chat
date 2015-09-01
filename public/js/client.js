@@ -23,7 +23,21 @@ BAMNodeChat.api = (function() {
                 }
             }
         };
+    
+    function memoryDisplay(rss) {
+        var MB = 1048576,
+            KB = 1024,
+            mb = 'MB',
+            kb = 'KB';
+    }
 
+    function timeDisplay(milliseconds) {
+        var SECS = 60,
+            MINS = 60,
+            HOURS = 24,
+            DAYS = 1;
+
+    }
 
     /**
      * @object {Object} controller - collection of methods     * and properties useful for running the application
@@ -88,11 +102,12 @@ BAMNodeChat.api = (function() {
                     console.log(text);
                     var time = new Date().getTime();
                     model.updateSince(time);
-                    view.appendTableRow(text.messages);
+                    if (text.messages.length > 0)
+                        view.appendTableRow(text.messages);
+                    else view.memory.innerHTML = "memory: " + text.rss;
                     callback();
                 },
                 complete: function() {
-                    clearTimeout(self.id); 
                     self.recvXHR();
                 },
                 data: {
@@ -103,12 +118,12 @@ BAMNodeChat.api = (function() {
             };
 
             this.request = ajax(xhrOptions);
-            this.id = setTimeout(function() {
+            /*this.id = setTimeout(function() {
                 if (self.request && self.request.readyState !== 4) {
                     self.request.abort();
                     self.recvXHR();
                 }
-            }, 30*1000);
+            }, 30*1000);*/
         }
     };
 
@@ -121,17 +136,20 @@ BAMNodeChat.api = (function() {
             this.chatHeader = document.getElementById('chat_header');
             this.footer = document.getElementById('footer');
             this.table = document.getElementsByTagName('table')[0];
+            this.users = document.getElementById('num_users');
+            this.uptime = document.getElementById('uptime');
+
+            this.memory = document.getElementById('memory');
+
+            this.chatMessages = document.getElementById('chat_messages');
             this.initEvents();
-        },
-
-        displayTime: function(timestamp) {
-
         },
 
         appendTableRow: function(msgs) {
             console.log(msgs);
             var isArray = BAMNodeChat.utils.array.isArray,
-            createTableRow;
+            createTableRow,
+            self = this;
 
             createTableRow = function(msg) {
                 var tr,
@@ -143,9 +161,12 @@ BAMNodeChat.api = (function() {
                 td3 = document.createElement('td');
                 tn2 = document.createTextNode(msg.nick);
                 tn = document.createTextNode(new Date(msg.timestamp).toTimeString().split(" ")[0]);
-                if (typeof msg.text === "undefined") {
+                if (msg.type === "join") {
                     tn3 = document.createTextNode("joined");
                     tr.setAttribute("class", "joined");
+                    model.users++;
+                    view.users.innerHTML = (model.users > 1) ? model.users + " users" : model.users + " user";
+
                 } else {
                     tn3 = document.createTextNode(msg.text);
                 }
@@ -217,6 +238,7 @@ BAMNodeChat.api = (function() {
             this.since = null;
             this.nameRE = /^[\w\-]{2,20}$/;
             this.msgRE = /^[\w\s\-!?',:;\.\(\)]{1,200}$/;
+            this.users = 0;
         },
 
         validateNickname: function(name) {

@@ -30,6 +30,7 @@ body {
 #chat_messages {
     overflow-y: scroll;
     max-height: 600px;
+    overflow-y: scroll;
 }
 
 table tr td {

@@ -28,7 +28,17 @@ var cs = exports;
 
 function Channel() {
     var messages = [],
-        callbacks = [];
+        callbacks = [],
+        interval,
+        INT = 30;
+
+
+    function executeCallbacks() {
+        while (callbacks.length > 0) {
+            callbacks.shift().callback([]);
+        }
+    }
+    interval = setInterval(executeCallbacks, INT*1000);
 
     this.appendMessage = function(nick, type, text) {
         var m = {
@@ -75,6 +85,7 @@ function Channel() {
             callback(matching);
         } else {
             callbacks.push({timestamp: new Date(), callback: callback});
+
         }
     };
 }
